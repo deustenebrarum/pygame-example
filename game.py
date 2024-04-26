@@ -13,7 +13,7 @@ class Game:
 
         self.clock = pygame.time.Clock()
         
-        self.surface = pygame.Surface(Game.SCREEN_SIZE)
+        self.events_listeners: list[EventsListener] = []
 
         self.player = Player(
             (Game.SCREEN_SIZE[0] / 2, Game.SCREEN_SIZE[1] / 2)
@@ -21,9 +21,11 @@ class Game:
         
         self.player_group = pygame.sprite.Group()
         self.player_group.add(self.player)
+        
+        self.events_listeners.append(self.player)
     
     def draw(self):
-        self.player_group.draw()
+        self.player_group.draw(self.screen)
 
     def run(self):
         is_running = True
@@ -33,9 +35,16 @@ class Game:
                 if event.type == pygame.QUIT:
                     is_running = False
 
-                EventsListener.dispatch(event)
+                for listener in self.events_listeners:
+                    listener.on_event(event)
+
+            self.player_group.update()
 
             self.screen.fill((0, 0, 0))
+            
+            self.screen.blit(self.screen, (0, 0))
+            
+            self.draw()
 
             pygame.display.flip()
 
