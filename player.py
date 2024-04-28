@@ -10,18 +10,24 @@ class Player(pygame.sprite.Sprite, EventsListener):
         self.rect = pygame.Rect(self.position.x, self.position.y, 50, 50)
         self.image = pygame.Surface(self.rect.size)
         self.image.fill((255, 255, 255))
+
+        self.speed = 5
     
     def update(self):
+        self._process_control()
+
         self.rect.y = int(self.position.y)
         self.rect.x = int(self.position.x)
 
+    def _process_control(self):
+        if pygame.key.get_pressed()[pygame.K_LEFT]:
+            self.position.x -= self.speed
+        if pygame.key.get_pressed()[pygame.K_RIGHT]:
+            self.position.x += self.speed
+        if pygame.key.get_pressed()[pygame.K_UP]:
+            self.position.y -= self.speed
+        if pygame.key.get_pressed()[pygame.K_DOWN]:
+            self.position.y += self.speed
+
     def on_event(self, event):
-        if event.type == pygame.KEYDOWN:
-            if event.key == pygame.K_LEFT:
-                self.position.x -= 100
-            if event.key == pygame.K_RIGHT:
-                self.position.x += 100
-            if event.key == pygame.K_UP:
-                self.position.y -= 100
-            if event.key == pygame.K_DOWN:
-                self.position.y += 100
+        pass
