@@ -16,7 +16,8 @@ class Game:
         self.events_listeners: list[EventsListener] = []
 
         self.player = Player(
-            (Game.SCREEN_SIZE[0] / 2, Game.SCREEN_SIZE[1] / 2)
+            (Game.SCREEN_SIZE[0] / 2, Game.SCREEN_SIZE[1] / 2),
+            self.clock
         )
         
         self.player_group = pygame.sprite.Group()
@@ -48,6 +49,6 @@ class Game:
 
             pygame.display.flip()
 
-            self.clock.tick(60)
+            self.clock.tick(120)
 
         pygame.quit()

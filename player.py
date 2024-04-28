@@ -1,33 +1,138 @@
+from enum import Enum
 import pygame
 
+from utility.animation_machine import AnimationMachine
 from utility.events_listener import EventsListener
+from utility.spritesheet import SpriteSheet
+from utility.animation import Animation
+
+
+class PlayerState(Enum):
+    IDLE = 0
+    WALKING = 1
+
+
+class PlayerDirection(Enum):
+    LEFT = 0
+    RIGHT = 1
+
+
+class PlayerAnimationMachine(AnimationMachine):
+    FPS = 10
+    SIZE = (11, 16)
+    FRAME_SHIFT = (13, 0)
+
+    def __init__(self, sprite_sheet, current):
+        super().__init__(
+            {
+                (PlayerState.IDLE, PlayerDirection.LEFT): Animation(
+                    sprite_sheet,
+                    columns=4,
+                    position=(103, 9),
+                    size=self.SIZE,
+                    frame_shift=self.FRAME_SHIFT,
+                    fps=self.FPS,
+                ),
+                (PlayerState.IDLE, PlayerDirection.RIGHT): Animation(
+                    sprite_sheet,
+                    columns=4,
+                    position=(8, 9),
+                    size=self.SIZE,
+                    frame_shift=self.FRAME_SHIFT,
+                    fps=self.FPS,
+                ),
+                (PlayerState.WALKING, PlayerDirection.LEFT): Animation(
+                    sprite_sheet,
+                    columns=4,
+                    position=(103, 33),
+                    size=self.SIZE,
+                    frame_shift=self.FRAME_SHIFT,
+                    fps=self.FPS,
+                ),
+                (PlayerState.WALKING, PlayerDirection.RIGHT): Animation(
+                    sprite_sheet,
+                    columns=4,
+                    position=(8, 33),
+                    size=self.SIZE,
+                    frame_shift=self.FRAME_SHIFT,
+                    fps=self.FPS,
+                ),
+            },
+            current,
+        )
+
 
 class Player(pygame.sprite.Sprite, EventsListener):
-    def __init__(self, position):
+    SPEED = 200
+    SPRITE_PATH = "./assets/characters/mHero_.png"
+    SCALE = 4
+
+    def __init__(self, position, clock):
         super().__init__()
         self.position = pygame.Vector2(position)
-        
-        self.rect = pygame.Rect(self.position.x, self.position.y, 50, 50)
-        self.image = pygame.Surface(self.rect.size)
-        self.image.fill((255, 255, 255))
 
-        self.speed = 5
-    
+        sprite_sheet = SpriteSheet(self.SPRITE_PATH, self.SCALE)
+
+        self.direction = PlayerDirection.LEFT
+        self.state = PlayerState.IDLE
+
+        self.animation_machine = PlayerAnimationMachine(
+            sprite_sheet, (self.state, self.direction)
+        )
+
+        self.image = self.animation_machine.image
+        self.rect = self.image.get_rect()
+
+        self.clock = clock
+
+        self.speed = self.SPEED
+
     def update(self):
         self._process_control()
 
         self.rect.y = int(self.position.y)
         self.rect.x = int(self.position.x)
 
+        self.animation_machine.select((self.state, self.direction))
+
+        self.animation_machine.update()
+        self.image = self.animation_machine.image
+
     def _process_control(self):
-        if pygame.key.get_pressed()[pygame.K_LEFT]:
-            self.position.x -= self.speed
-        if pygame.key.get_pressed()[pygame.K_RIGHT]:
-            self.position.x += self.speed
-        if pygame.key.get_pressed()[pygame.K_UP]:
-            self.position.y -= self.speed
-        if pygame.key.get_pressed()[pygame.K_DOWN]:
-            self.position.y += self.speed
+        dt = self.clock.get_time() / 1000
+        speed = self.speed * dt
+
+        left_pressed = pygame.key.get_pressed()[pygame.K_LEFT]
+        right_pressed = pygame.key.get_pressed()[pygame.K_RIGHT]
+        up_pressed = pygame.key.get_pressed()[pygame.K_UP]
+        down_pressed = pygame.key.get_pressed()[pygame.K_DOWN]
+
+        if left_pressed:
+            self.state = PlayerState.WALKING
+            self.direction = PlayerDirection.LEFT
+            self.position.x -= speed
+        if right_pressed:
+            self.state = PlayerState.WALKING
+            self.direction = PlayerDirection.RIGHT
+            self.position.x += speed
+        if up_pressed:
+            self.state = PlayerState.WALKING
+            self.position.y -= speed
+        if down_pressed:
+            self.state = PlayerState.WALKING
+            self.position.y += speed
+        
+        if not any((
+            left_pressed,
+            right_pressed,
+            up_pressed,
+            down_pressed
+        )):
+            self.state = PlayerState.IDLE
+            if self.animation_machine.is_current((PlayerState.WALKING, PlayerDirection.LEFT)):
+                self.direction = PlayerDirection.LEFT
+            elif self.animation_machine.is_current((PlayerState.WALKING, PlayerDirection.RIGHT)):
+                self.direction = PlayerDirection.RIGHT        
 
     def on_event(self, event):
         pass
