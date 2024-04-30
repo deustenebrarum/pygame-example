@@ -2,6 +2,7 @@ from enum import Enum
 import pygame
 
 from utility.animation_machine import AnimationMachine
+from utility.character import Character
 from utility.events_listener import EventsListener
 from utility.spritesheet import SpriteSheet
 from utility.animation import Animation
@@ -62,41 +63,31 @@ class PlayerAnimationMachine(AnimationMachine):
         )
 
 
-class Player(pygame.sprite.Sprite, EventsListener):
+class Player(Character):
     SPEED = 200
     SPRITE_PATH = "./assets/characters/mHero_.png"
     SCALE = 4
 
     def __init__(self, position, clock):
-        super().__init__()
-        self.position = pygame.Vector2(position)
-
         sprite_sheet = SpriteSheet(self.SPRITE_PATH, self.SCALE)
 
         self.direction = PlayerDirection.LEFT
         self.state = PlayerState.IDLE
 
-        self.animation_machine = PlayerAnimationMachine(
+        animation_machine = PlayerAnimationMachine(
             sprite_sheet, (self.state, self.direction)
         )
 
-        self.image = self.animation_machine.image
-        self.rect = self.image.get_rect()
-
-        self.clock = clock
+        super().__init__(position, clock, animation_machine)
 
         self.speed = self.SPEED
 
     def update(self):
         self._process_control()
 
-        self.rect.y = int(self.position.y)
-        self.rect.x = int(self.position.x)
+        self.select_animation((self.state, self.direction))
 
-        self.animation_machine.select((self.state, self.direction))
-
-        self.animation_machine.update()
-        self.image = self.animation_machine.image
+        super().update()
 
     def _process_control(self):
         dt = self.clock.get_time() / 1000
@@ -121,7 +112,7 @@ class Player(pygame.sprite.Sprite, EventsListener):
         if down_pressed:
             self.state = PlayerState.WALKING
             self.position.y += speed
-        
+
         if not any((
             left_pressed,
             right_pressed,
@@ -132,7 +123,4 @@ class Player(pygame.sprite.Sprite, EventsListener):
             if self.animation_machine.is_current((PlayerState.WALKING, PlayerDirection.LEFT)):
                 self.direction = PlayerDirection.LEFT
             elif self.animation_machine.is_current((PlayerState.WALKING, PlayerDirection.RIGHT)):
-                self.direction = PlayerDirection.RIGHT        
-
-    def on_event(self, event):
-        pass
+                self.direction = PlayerDirection.RIGHT

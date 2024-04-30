@@ -23,7 +23,7 @@ class Game:
         self.player_group = pygame.sprite.Group()
         self.player_group.add(self.player)
         
-        self.events_listeners.append(self.player)
+        self.enemy_group = pygame.sprite.Group()
     
     def draw(self):
         self.player_group.draw(self.screen)
