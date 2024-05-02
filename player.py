@@ -1,7 +1,5 @@
-from enum import Enum
 import pygame
 
-from utility.animation_machine import AnimationMachine
 from utility.character import Character, CharacterDirection, CharacterState
 from utility.spritesheet import SpriteSheet
 
@@ -16,16 +14,20 @@ class Player(Character):
 
         super().__init__(
             position, clock, sprite_sheet,
+            (11, 16), (13, 0),
             positionsByStates={
                 (CharacterState.IDLE, CharacterDirection.LEFT): (103, 9),
                 (CharacterState.IDLE, CharacterDirection.RIGHT): (8, 9),
                 (CharacterState.WALKING, CharacterDirection.LEFT): (103, 33),
                 (CharacterState.WALKING, CharacterDirection.RIGHT): (8, 33),
+                (CharacterState.DYING, CharacterDirection.RIGHT): (8, 152),
+                (CharacterState.DYING, CharacterDirection.LEFT): (103, 152),
             }
         )
 
         self.speed = self.SPEED
         self.enemy_group = enemy_group
+        self.invulnerable = False
 
     def update(self):
         self._process_collision()
@@ -34,7 +36,14 @@ class Player(Character):
         super().update()
 
     def _process_collision(self):
-        if pygame.sprite.spritecollideany(self, self.enemy_group) is not None:
+        if self.invulnerable:
+            return
+
+        collided_enemies = pygame.sprite.spritecollide(
+            self, self.enemy_group, False
+        )
+        any_enemy_alive = any([enemy.is_alive for enemy in collided_enemies])
+        if len(collided_enemies) > 0 and any_enemy_alive:
             self.kill()
 
     def _process_control(self):
@@ -68,7 +77,11 @@ class Player(Character):
             down_pressed
         )):
             self.state = CharacterState.IDLE
-            if self.animation_machine.is_current((CharacterState.WALKING, CharacterDirection.LEFT)):
+            if self.animation_machine.is_current(
+                (CharacterState.WALKING, CharacterDirection.LEFT)
+            ):
                 self.direction = CharacterDirection.LEFT
-            elif self.animation_machine.is_current((CharacterState.WALKING, CharacterDirection.RIGHT)):
+            elif self.animation_machine.is_current(
+                (CharacterState.WALKING, CharacterDirection.RIGHT)
+            ):
                 self.direction = CharacterDirection.RIGHT

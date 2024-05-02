@@ -4,7 +4,7 @@
         {
             "label": "Run Python",
             "type": "shell",
-            "command": "python",
+            "command": "./venv/Scripts/python",
             "args": ["-u", "main.py"],
             "problemMatcher": [],
             "group": {

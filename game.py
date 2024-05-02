@@ -15,18 +15,21 @@ class Game:
         self.enemy_spawn_interval = Game.ENEMY_SPAWN_BASE_INTERVAL
 
         pygame.init()
-        
+
         self.screen = pygame.display.set_mode(Game.SCREEN_SIZE)
 
         self.clock = pygame.time.Clock()
 
         self.events_listeners: list[EventsListener] = []
 
-        pygame.time.set_timer(self.ENEMY_SPAWN_EVENT, Game.ENEMY_SPAWN_BASE_INTERVAL)
-        
+        pygame.time.set_timer(
+            self.ENEMY_SPAWN_EVENT,
+            Game.ENEMY_SPAWN_BASE_INTERVAL
+        )
+
         self.enemy_group = pygame.sprite.Group()
         self.player_group = pygame.sprite.Group()
-        
+
         self.player = Player(
             (Game.SCREEN_SIZE[0] / 2, Game.SCREEN_SIZE[1] / 2),
             self.clock,
@@ -34,7 +37,6 @@ class Game:
         )
 
         self.player_group.add(self.player)
-
 
     def draw(self):
         self.player_group.draw(self.screen)
@@ -47,18 +49,18 @@ class Game:
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
                     is_running = False
-                
+
                 if event.type == self.ENEMY_SPAWN_EVENT:
                     self.enemy_group.add(Enemy(
-                        random_screen_border_position(Game.SCREEN_SIZE), 
+                        random_screen_border_position(Game.SCREEN_SIZE),
                         self.clock, self.player
                     ))
                     if self.enemy_spawn_interval > 300:
                         self.enemy_spawn_interval -= 1
                     else:
                         self.enemy_spawn_interval = 300
-                    pygame.time.set_timer(self.ENEMY_SPAWN_EVENT, self.enemy_spawn_interval)
-                    
+                    pygame.time.set_timer(
+                        self.ENEMY_SPAWN_EVENT, self.enemy_spawn_interval)
 
                 for listener in self.events_listeners:
                     listener.on_event(event)

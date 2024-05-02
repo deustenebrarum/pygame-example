@@ -8,14 +8,15 @@ class AnimationMachine(Generic[T]):
     def __init__(self, animations: dict[T, Animation], current: T) -> None:
         self.animations = animations
         self.animation = self.animations[current]
+        self.animation.start()
 
     def select(self, key: T) -> Animation:
         if self.animations[key] == self.animation:
             return
 
-        self.animation._frame = 0
-
         self.animation = self.animations[key]
+
+        self.animation.start()
 
     def update(self) -> None:
         self.animation.update()
