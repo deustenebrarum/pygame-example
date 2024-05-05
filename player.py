@@ -1,29 +1,27 @@
 import pygame
 
 from utility.character import Character, CharacterAnimationMachine, CharacterDirection, CharacterState
+from utility.framed_spritesheet import FramedSpriteSheet
 from utility.spritesheet import SpriteSheet
 
 
 class PlayerAnimationMachine(CharacterAnimationMachine):
     SPRITE_PATH = "./assets/characters/mHero_.png"
     SCALE = 4
-    SIZE = (11, 16)
-    FRAME_SHIFT = (13, 0)
 
     def __init__(self):
-        sprite_sheet = SpriteSheet(self.SPRITE_PATH, self.SCALE)
+        sprite_sheet = FramedSpriteSheet(self.SPRITE_PATH, self.SCALE)
 
         super().__init__(
             sprite_sheet, (CharacterState.IDLE, CharacterDirection.LEFT),
             {
-                (CharacterState.IDLE, CharacterDirection.LEFT): (103, 9),
-                (CharacterState.IDLE, CharacterDirection.RIGHT): (8, 9),
-                (CharacterState.WALKING, CharacterDirection.LEFT): (103, 33),
-                (CharacterState.WALKING, CharacterDirection.RIGHT): (8, 33),
-                (CharacterState.DYING, CharacterDirection.RIGHT): (8, 152),
-                (CharacterState.DYING, CharacterDirection.LEFT): (103, 152),
-            },
-            self.SIZE, self.FRAME_SHIFT
+                (CharacterState.IDLE, CharacterDirection.LEFT): (24*4 + 1, 0),
+                (CharacterState.IDLE, CharacterDirection.RIGHT): (0, 0),
+                (CharacterState.WALKING, CharacterDirection.LEFT): (24*4 + 1, 25),
+                (CharacterState.WALKING, CharacterDirection.RIGHT): (0, 25),
+                (CharacterState.DYING, CharacterDirection.RIGHT): (24 * 4 + 1, 49),
+                (CharacterState.DYING, CharacterDirection.LEFT): (0, 49),
+            }
         )
 
 
@@ -36,12 +34,13 @@ class Player(Character):
 
         super().__init__(
             position, clock,
-            animation_machine
+            animation_machine,
+            collision_size=(44, 64),
         )
 
         self.speed = self.BASE_SPEED
         self.enemy_group = enemy_group
-        self.invulnerable = True
+        self.invulnerable = False
 
     def update(self):
         self._process_collision()
@@ -53,11 +52,14 @@ class Player(Character):
         if self.invulnerable:
             return
 
-        collided_enemies = pygame.sprite.spritecollide(
-            self, self.enemy_group, False
-        )
+        collided_enemies = [
+            enemy
+            for enemy in self.enemy_group
+            if enemy.collision_box.collides_with(self.collision_box)
+        ]
+
         any_enemy_alive = any([enemy.is_alive for enemy in collided_enemies])
-        if len(collided_enemies) > 0 and any_enemy_alive:
+        if any_enemy_alive:
             self.kill()
 
     def _process_control(self):
@@ -91,11 +93,3 @@ class Player(Character):
             down_pressed
         )):
             self.state = CharacterState.IDLE
-            if self.animation_machine.is_current(
-                (CharacterState.WALKING, CharacterDirection.LEFT)
-            ):
-                self.direction = CharacterDirection.LEFT
-            elif self.animation_machine.is_current(
-                (CharacterState.WALKING, CharacterDirection.RIGHT)
-            ):
-                self.direction = CharacterDirection.RIGHT

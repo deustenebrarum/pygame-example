@@ -5,7 +5,7 @@ from utility.character import CharacterAnimationMachine, CharacterDirection, Cha
 
 class GoblinAnimationMachine(CharacterAnimationMachine):
     SIZE = (11, 16)
-    DYING_SIZE = (15, 16)
+    DYING_SIZE = (16, 16)
     FRAME_SHIFT = (13, 0)
 
     def __init__(self):
@@ -19,7 +19,7 @@ class GoblinAnimationMachine(CharacterAnimationMachine):
                 (CharacterState.WALKING, CharacterDirection.LEFT): (103, 33),
                 (CharacterState.WALKING, CharacterDirection.RIGHT): (8, 33),
                 (CharacterState.DYING, CharacterDirection.RIGHT): (6, 128),
-                (CharacterState.DYING, CharacterDirection.LEFT): (103, 128),
+                (CharacterState.DYING, CharacterDirection.LEFT): (96, 128),
             },
             self.SIZE, self.FRAME_SHIFT
         )
@@ -27,7 +27,14 @@ class GoblinAnimationMachine(CharacterAnimationMachine):
         dyingRight = self.animations[(CharacterState.DYING, CharacterDirection.RIGHT)]
         dyingRight.change_params(
             size=self.DYING_SIZE,
-            frame_shift=(9, 0)
+            frame_shift=(8, 0)
+        )
+        
+        dyingLeft = self.animations[(CharacterState.DYING, CharacterDirection.LEFT)]
+        dyingLeft.change_params(
+            # size=self.DYING_SIZE,
+            frame_shift=(0, 0),
+            size=(24, 16)
         )
 
 class Goblin(Enemy):
@@ -36,5 +43,6 @@ class Goblin(Enemy):
         
         super().__init__(
             position, clock, player,
-            animation_machine
+            animation_machine,
+            collision_size=(44, 60),
         )

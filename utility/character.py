@@ -3,6 +3,7 @@ import pygame
 
 from utility.animation import Animation
 from utility.animation_machine import AnimationMachine
+from utility.collision_box import CollisionBox
 from utility.spritesheet import SpriteSheet
 
 
@@ -20,10 +21,11 @@ class CharacterDirection(Enum):
 class CharacterAnimationMachine(AnimationMachine):
     FPS = 8
     DYING_FPS = 2
+    SIZE = (24, 24)
 
     def __init__(
         self, sprite_sheet, current,
-        positionsByStates, size, frame_shift=(13, 0)
+        positionsByStates, size=(24, 24), frame_shift=(0, 0)
     ):
         self.frame_shift = frame_shift
         self.size = size
@@ -92,21 +94,27 @@ class CharacterAnimationMachine(AnimationMachine):
 
 class Character(pygame.sprite.Sprite):
     def __init__(
-        self, position,
+        self, position: tuple[int, int],
         clock: pygame.time.Clock,
         animation_machine: AnimationMachine,
+        collision_size: tuple[int, int],
         state: CharacterState = CharacterState.IDLE,
         direction: CharacterDirection = CharacterDirection.LEFT
     ):
         super().__init__()
         self.position = pygame.Vector2(position)
+        self.collision_box = CollisionBox(
+            (position[0] - collision_size[0] / 2, position[1] - collision_size[1] / 2),
+            collision_size
+        )
 
         self.direction = direction
         self.state = state
-        
+
         self.animation_machine = animation_machine
 
         self.image = self.animation_machine.image
+
         self.rect = self.image.get_rect()
 
         self.clock = clock

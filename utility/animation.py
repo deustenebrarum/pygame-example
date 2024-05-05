@@ -21,24 +21,15 @@ class Animation:
         self._position = position
         self._size = size
         self._frame_shift = frame_shift
-        shifts = (
-            (
-                position[0] + (frame_shift[0] + size[0]) * column,
-                position[1]
-            )
-            for column in range(columns)
-        )
-        self.frames = [
-            self._get_frame(position, size)
-            for position in shifts
-        ]
 
-    def change_params(self, 
-        sprite_sheet=None, columns=None, 
-        position=None, 
-        size=None, frame_shift=None, fps=None, 
-        once=None
-    ):
+        self._generate_frames()
+
+    def change_params(self,
+                      sprite_sheet=None, columns=None,
+                      position=None,
+                      size=None, frame_shift=None, fps=None,
+                      once=None
+                      ):
         if sprite_sheet is not None:
             self.sprite_sheet = sprite_sheet
         if columns is not None:
@@ -57,21 +48,22 @@ class Animation:
         self._last_update = pygame.time.get_ticks()
         self._frame = 0
         self._animation_start = pygame.time.get_ticks()
-         
+        self._generate_frames()
+
+    def _generate_frames(self):
         shifts = (
             (
-                self._position[0] + (self._frame_shift[0] + self._size[0]) * column,
+                self._position[0] +
+                (self._frame_shift[0] + self._size[0]) * column,
                 self._position[1]
             )
             for column in range(self.columns)
         )
         self.frames = [
-            self._get_frame(self._position, self._size)
-            for self._position in shifts
+            self._get_frame(position, self._size)
+            for position in shifts
         ]
 
-        
-    
     @property
     def image(self):
         return self.frames[self._frame]
@@ -82,7 +74,7 @@ class Animation:
         self._last_update = pygame.time.get_ticks()
 
     def update(self):
-        if self.once and self._frame == len(self.frames) - 1:
+        if self.once and self.ended:
             return
         now = pygame.time.get_ticks()
         if now - self._last_update > 1000 / self.fps:

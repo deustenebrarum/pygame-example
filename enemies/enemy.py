@@ -4,7 +4,8 @@ from utility.character import Character, CharacterDirection, CharacterState
 class Enemy(Character):
     def __init__(
         self, position, clock, player,
-        animation_machine, 
+        animation_machine,
+        collision_size: tuple[int, int],
         life_limit = 1000 * 4,
         speed = 100
     ):
@@ -13,6 +14,7 @@ class Enemy(Character):
         
         super().__init__(
             position, clock, animation_machine,
+            collision_size,
             CharacterState.WALKING, CharacterDirection.RIGHT
         )
 

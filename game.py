@@ -72,8 +72,6 @@ class Game:
 
             self.screen.fill((0, 0, 0))
 
-            self.screen.blit(self.screen, (0, 0))
-
             self.draw()
 
             pygame.display.flip()
