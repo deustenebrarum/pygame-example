@@ -1,40 +1,32 @@
 import pygame
 from utility.character import Character, CharacterDirection, CharacterState
 
-from enemy_spritesheets import get_random_sprite_sheet
-
-
 class Enemy(Character):
-    SPEED = 100
-    LIFE_LIMIT = 1000 * 4
-
-    def __init__(self, position, clock, player):
-        sprite_sheet = get_random_sprite_sheet()
-
+    def __init__(
+        self, position, clock, player,
+        animation_machine, 
+        life_limit = 1000 * 4,
+        speed = 100
+    ):
+        self.life_limit = life_limit
+        self.speed = speed
+        
         super().__init__(
-            position, clock, sprite_sheet,
-            (11, 16), (13, 0),
-            positionsByStates={
-                (CharacterState.IDLE, CharacterDirection.RIGHT): (6, 8),
-                (CharacterState.IDLE, CharacterDirection.LEFT): (103, 8),
-                (CharacterState.WALKING, CharacterDirection.RIGHT): (6, 32),
-                (CharacterState.WALKING, CharacterDirection.LEFT): (103, 32),
-                (CharacterState.DYING, CharacterDirection.RIGHT): (6, 152),
-                (CharacterState.DYING, CharacterDirection.LEFT): (103, 152),
-            }
+            position, clock, animation_machine,
+            CharacterState.WALKING, CharacterDirection.RIGHT
         )
 
         self.player = player
 
-        self.speed = self.SPEED
-        self.spawn_time = pygame.time.get_ticks()
+        self.speed = self.speed
+        self.spawned_time = pygame.time.get_ticks()
         self.state = CharacterState.WALKING
 
     def update(self):
         if self.is_alive:
             self.move_to_player(self.player)
 
-        if pygame.time.get_ticks() - self.spawn_time > self.LIFE_LIMIT:
+        if pygame.time.get_ticks() - self.spawned_time > self.life_limit:
             self.state = CharacterState.DYING
 
         super().update()

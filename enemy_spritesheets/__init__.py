@@ -7,12 +7,3 @@ __all__ = [
     "GoblinSpriteSheet",
     "SkeletonSpriteSheet",
 ]
-
-
-def get_random_sprite_sheet() -> SpriteSheet:
-    SPRITE_SHEETS = [
-        GoblinSpriteSheet(),
-        SkeletonSpriteSheet(),
-    ]
-
-    return random.choice(SPRITE_SHEETS)

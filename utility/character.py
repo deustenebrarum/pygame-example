@@ -3,6 +3,7 @@ import pygame
 
 from utility.animation import Animation
 from utility.animation_machine import AnimationMachine
+from utility.spritesheet import SpriteSheet
 
 
 class CharacterState(Enum):
@@ -93,22 +94,17 @@ class Character(pygame.sprite.Sprite):
     def __init__(
         self, position,
         clock: pygame.time.Clock,
-        sprite_sheet: AnimationMachine,
-        size,
-        frame_shift,
-        positionsByStates: dict[tuple[CharacterState,
-                                      CharacterDirection], tuple[int, int]]
+        animation_machine: AnimationMachine,
+        state: CharacterState = CharacterState.IDLE,
+        direction: CharacterDirection = CharacterDirection.LEFT
     ):
         super().__init__()
         self.position = pygame.Vector2(position)
 
-        self.direction = CharacterDirection.LEFT
-        self.state = CharacterState.IDLE
-
-        self.animation_machine = CharacterAnimationMachine(
-            sprite_sheet, (self.state, self.direction),
-            positionsByStates, size, frame_shift
-        )
+        self.direction = direction
+        self.state = state
+        
+        self.animation_machine = animation_machine
 
         self.image = self.animation_machine.image
         self.rect = self.image.get_rect()

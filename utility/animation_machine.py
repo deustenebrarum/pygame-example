@@ -10,7 +10,7 @@ class AnimationMachine(Generic[T]):
         self.animation = self.animations[current]
         self.animation.start()
 
-    def select(self, key: T) -> Animation:
+    def select(self, key: T):
         if self.animations[key] == self.animation:
             return
 

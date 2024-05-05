@@ -1,33 +1,47 @@
 import pygame
 
-from utility.character import Character, CharacterDirection, CharacterState
+from utility.character import Character, CharacterAnimationMachine, CharacterDirection, CharacterState
 from utility.spritesheet import SpriteSheet
 
 
-class Player(Character):
-    SPEED = 200
+class PlayerAnimationMachine(CharacterAnimationMachine):
     SPRITE_PATH = "./assets/characters/mHero_.png"
     SCALE = 4
+    SIZE = (11, 16)
+    FRAME_SHIFT = (13, 0)
 
-    def __init__(self, position, clock, enemy_group):
+    def __init__(self):
         sprite_sheet = SpriteSheet(self.SPRITE_PATH, self.SCALE)
 
         super().__init__(
-            position, clock, sprite_sheet,
-            (11, 16), (13, 0),
-            positionsByStates={
+            sprite_sheet, (CharacterState.IDLE, CharacterDirection.LEFT),
+            {
                 (CharacterState.IDLE, CharacterDirection.LEFT): (103, 9),
                 (CharacterState.IDLE, CharacterDirection.RIGHT): (8, 9),
                 (CharacterState.WALKING, CharacterDirection.LEFT): (103, 33),
                 (CharacterState.WALKING, CharacterDirection.RIGHT): (8, 33),
                 (CharacterState.DYING, CharacterDirection.RIGHT): (8, 152),
                 (CharacterState.DYING, CharacterDirection.LEFT): (103, 152),
-            }
+            },
+            self.SIZE, self.FRAME_SHIFT
         )
 
-        self.speed = self.SPEED
+
+class Player(Character):
+    BASE_SPEED = 200
+
+    def __init__(self, position, clock, enemy_group):
+
+        animation_machine = PlayerAnimationMachine()
+
+        super().__init__(
+            position, clock,
+            animation_machine
+        )
+
+        self.speed = self.BASE_SPEED
         self.enemy_group = enemy_group
-        self.invulnerable = False
+        self.invulnerable = True
 
     def update(self):
         self._process_collision()

@@ -1,6 +1,7 @@
 import pygame
 
-from enemy import Enemy
+from enemies.enemy import Enemy
+from enemies.goblin import Goblin
 from player import Player
 from utility.events_listener import EventsListener
 from utility.random_generators import random_screen_border_position
@@ -51,7 +52,7 @@ class Game:
                     is_running = False
 
                 if event.type == self.ENEMY_SPAWN_EVENT:
-                    self.enemy_group.add(Enemy(
+                    self.enemy_group.add(Goblin(
                         random_screen_border_position(Game.SCREEN_SIZE),
                         self.clock, self.player
                     ))
