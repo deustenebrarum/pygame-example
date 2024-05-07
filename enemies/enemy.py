@@ -1,21 +1,22 @@
 import pygame
 from utility.character import Character, CharacterDirection, CharacterState
 
+
 class Enemy(Character):
     def __init__(
         self, position, clock, player,
         animation_machine,
         collision_size: tuple[int, int],
-        life_limit = 1000 * 4,
-        speed = 100
+        life_limit=1000 * 4,
+        speed=Character.BASE_SPEED
     ):
         self.life_limit = life_limit
-        self.speed = speed
-        
+
         super().__init__(
             position, clock, animation_machine,
             collision_size,
-            CharacterState.WALKING, CharacterDirection.RIGHT
+            CharacterState.WALKING, CharacterDirection.RIGHT,
+            speed=speed
         )
 
         self.player = player
@@ -44,8 +45,8 @@ class Enemy(Character):
         speed = self.speed * dt
 
         vector = (
-            pygame.Vector2(player.position) -
-            pygame.Vector2(self.position)
+            player.position -
+            self.position
         )
         if vector.x < 0:
             self.direction = CharacterDirection.LEFT

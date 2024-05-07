@@ -1,17 +1,20 @@
 import pygame
 
-from enemies.enemy import Enemy
-from enemies.goblin import Goblin
 from player import Player
 from utility.events_listener import EventsListener
-from utility.random_generators import random_screen_border_position
+from utility.random_generators import (
+    random_screen_border_position,
+    select_random_enemy
+)
 
 
 class Game:
     SCREEN_SIZE = (1280, 720)
     ENEMY_SPAWN_BASE_INTERVAL = 1000
 
-    def __init__(self):
+    def __init__(self, debug=False):
+        self.debug = debug
+
         self.ENEMY_SPAWN_EVENT = pygame.event.custom_type()
         self.enemy_spawn_interval = Game.ENEMY_SPAWN_BASE_INTERVAL
 
@@ -39,8 +42,24 @@ class Game:
 
         self.player_group.add(self.player)
 
+    def _draw_debug(self):
+        def draw_collisions(characters):
+            for character in characters:
+                pygame.draw.rect(
+                    self.screen,
+                    (255, 0, 0),
+                    character.collision_box
+                )
+
+        draw_collisions(self.player_group)
+        draw_collisions(self.enemy_group)
+
     def draw(self):
+        if self.debug:
+            self._draw_collision_rects()
+
         self.player_group.draw(self.screen)
+
         self.enemy_group.draw(self.screen)
 
     def run(self):
@@ -52,7 +71,7 @@ class Game:
                     is_running = False
 
                 if event.type == self.ENEMY_SPAWN_EVENT:
-                    self.enemy_group.add(Goblin(
+                    self.enemy_group.add(select_random_enemy()(
                         random_screen_border_position(Game.SCREEN_SIZE),
                         self.clock, self.player
                     ))

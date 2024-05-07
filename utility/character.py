@@ -4,7 +4,7 @@ import pygame
 from utility.animation import Animation
 from utility.animation_machine import AnimationMachine
 from utility.collision_box import CollisionBox
-from utility.spritesheet import SpriteSheet
+from utility import constants
 
 
 class CharacterState(Enum):
@@ -21,7 +21,6 @@ class CharacterDirection(Enum):
 class CharacterAnimationMachine(AnimationMachine):
     FPS = 8
     DYING_FPS = 2
-    SIZE = (24, 24)
 
     def __init__(
         self, sprite_sheet, current,
@@ -93,18 +92,28 @@ class CharacterAnimationMachine(AnimationMachine):
 
 
 class Character(pygame.sprite.Sprite):
+    BASE_SPEED = 160
+
     def __init__(
         self, position: tuple[int, int],
         clock: pygame.time.Clock,
         animation_machine: AnimationMachine,
         collision_size: tuple[int, int],
         state: CharacterState = CharacterState.IDLE,
-        direction: CharacterDirection = CharacterDirection.LEFT
+        direction: CharacterDirection = CharacterDirection.LEFT,
+        collision_offset: tuple[int, int] = (
+            0, 4 * constants.PIXELS_PER_UNIT
+        ),
+        speed=BASE_SPEED
     ):
         super().__init__()
+        self.speed = speed
         self.position = pygame.Vector2(position)
+        self.collision_offset = pygame.Vector2(collision_offset)
+
         self.collision_box = CollisionBox(
-            (position[0] - collision_size[0] / 2, position[1] - collision_size[1] / 2),
+            (position[0] + collision_offset[0],
+             position[1] + collision_offset[1]),
             collision_size
         )
 
@@ -120,13 +129,30 @@ class Character(pygame.sprite.Sprite):
         self.clock = clock
 
     def update(self):
-        self.rect.y = int(self.position.y)
-        self.rect.x = int(self.position.x)
+        self.rect.y = int(self.edge_position.y)
+        self.rect.x = int(self.edge_position.x)
+        self.collision_box.x = int(
+            self.position.x +
+            self.collision_offset.x -
+            self.collision_box.width / 2
+        )
+        self.collision_box.y = int(
+            self.position.y +
+            self.collision_offset.y -
+            self.collision_box.height / 2
+        )
 
         self.select_animation((self.state, self.direction))
 
         self.animation_machine.update()
         self.image = self.animation_machine.image
+
+    @property
+    def edge_position(self):
+        return pygame.Vector2(
+            self.position.x - self.rect.width / 2,
+            self.position.y - self.rect.height / 2
+        )
 
     def select_animation(self, key):
         self.animation_machine.select(key)

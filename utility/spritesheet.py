@@ -1,11 +1,15 @@
 import pygame
 
+from utility import constants
+
 
 class SpriteSheet:
-    def __init__(self, filename, scale):
+    SCALE = constants.PIXELS_PER_UNIT
+
+    def __init__(self, filename, scale=1):
         self.spritesheet = pygame.image.load(filename)
         self.spritesheet = self.spritesheet.convert_alpha()
-        self.scale = scale
+        self.scale = scale * self.SCALE
 
     def get_image(self, x, y, width, height):
         image = pygame.Surface((width, height), pygame.SRCALPHA, 32)

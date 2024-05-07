@@ -1,33 +1,46 @@
 import pygame
 
-from utility.character import Character, CharacterAnimationMachine, CharacterDirection, CharacterState
+from utility.character import (
+    Character, CharacterAnimationMachine,
+    CharacterDirection, CharacterState
+)
 from utility.framed_spritesheet import FramedSpriteSheet
-from utility.spritesheet import SpriteSheet
 
 
 class PlayerAnimationMachine(CharacterAnimationMachine):
     SPRITE_PATH = "./assets/characters/mHero_.png"
-    SCALE = 4
 
     def __init__(self):
-        sprite_sheet = FramedSpriteSheet(self.SPRITE_PATH, self.SCALE)
+        sprite_sheet = FramedSpriteSheet(self.SPRITE_PATH)
+
+        UNIT_PX = 24
 
         super().__init__(
             sprite_sheet, (CharacterState.IDLE, CharacterDirection.LEFT),
             {
-                (CharacterState.IDLE, CharacterDirection.LEFT): (24*4 + 1, 0),
-                (CharacterState.IDLE, CharacterDirection.RIGHT): (0, 0),
-                (CharacterState.WALKING, CharacterDirection.LEFT): (24*4 + 1, 25),
-                (CharacterState.WALKING, CharacterDirection.RIGHT): (0, 25),
-                (CharacterState.DYING, CharacterDirection.RIGHT): (24 * 4 + 1, 49),
-                (CharacterState.DYING, CharacterDirection.LEFT): (0, 49),
+                (CharacterState.IDLE, CharacterDirection.LEFT): (
+                    UNIT_PX*4 + 1, 0
+                ),
+                (CharacterState.IDLE, CharacterDirection.RIGHT): (
+                    0, 0
+                ),
+                (CharacterState.WALKING, CharacterDirection.LEFT): (
+                    UNIT_PX*4 + 1, UNIT_PX + 1
+                ),
+                (CharacterState.WALKING, CharacterDirection.RIGHT): (
+                    0, 25
+                ),
+                (CharacterState.DYING, CharacterDirection.RIGHT): (
+                    UNIT_PX * 4 + 1, UNIT_PX * 2 + 1
+                ),
+                (CharacterState.DYING, CharacterDirection.LEFT): (
+                    0, 49
+                ),
             }
         )
 
 
 class Player(Character):
-    BASE_SPEED = 200
-
     def __init__(self, position, clock, enemy_group):
 
         animation_machine = PlayerAnimationMachine()
@@ -38,7 +51,6 @@ class Player(Character):
             collision_size=(44, 64),
         )
 
-        self.speed = self.BASE_SPEED
         self.enemy_group = enemy_group
         self.invulnerable = False
 
