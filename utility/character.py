@@ -92,7 +92,7 @@ class CharacterAnimationMachine(AnimationMachine):
 
 
 class Character(pygame.sprite.Sprite):
-    BASE_SPEED = 160
+    BASE_SPEED = 200
 
     def __init__(
         self, position: tuple[int, int],
