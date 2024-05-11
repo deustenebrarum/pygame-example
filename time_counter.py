@@ -1,19 +1,19 @@
 import pygame
 
-from utility.constants import MAX_GAME_TIME
 from utility.text_object import TextObject
 
 
 class TimeCounter:
-    def __init__(self, clock: pygame.time.Clock):
+    def __init__(self, clock: pygame.time.Clock, max_game_time):
         font = pygame.font.SysFont("Arial", 50, bold=True)
         self.text = TextObject("", font=font)
         self.clock = clock
 
-        self._time_left = MAX_GAME_TIME
+        self.max_time = max_game_time
+        self._time_left = max_game_time
 
     def start(self):
-        self._time_left = MAX_GAME_TIME
+        self._time_left = self.max_time
         self.update_text(self._time_left)
 
     def update(self):

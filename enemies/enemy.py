@@ -1,5 +1,5 @@
 import pygame
-from utility.character import Character, CharacterDirection, CharacterState
+from utility.character import Character, Direction, CharacterState
 
 
 class Enemy(Character):
@@ -15,7 +15,7 @@ class Enemy(Character):
         super().__init__(
             position, clock, animation_machine,
             collision_size,
-            CharacterState.WALKING, CharacterDirection.RIGHT,
+            CharacterState.WALKING, Direction.RIGHT,
             speed=speed
         )
 
@@ -49,7 +49,7 @@ class Enemy(Character):
             self.position
         )
         if vector.x < 0:
-            self.direction = CharacterDirection.LEFT
+            self.direction = Direction.LEFT
         else:
-            self.direction = CharacterDirection.RIGHT
+            self.direction = Direction.RIGHT
         self.position += vector.normalize() * speed

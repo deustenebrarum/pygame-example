@@ -1,8 +1,9 @@
 import pygame
 
+from sword import Sword
 from utility.character import (
     Character, CharacterAnimationMachine,
-    CharacterDirection, CharacterState
+    Direction, CharacterState
 )
 from utility.framed_spritesheet import FramedSpriteSheet
 
@@ -16,24 +17,24 @@ class PlayerAnimationMachine(CharacterAnimationMachine):
         UNIT_PX = 24
 
         super().__init__(
-            sprite_sheet, (CharacterState.IDLE, CharacterDirection.LEFT),
+            sprite_sheet, (CharacterState.IDLE, Direction.LEFT),
             {
-                (CharacterState.IDLE, CharacterDirection.LEFT): (
+                (CharacterState.IDLE, Direction.LEFT): (
                     UNIT_PX*4 + 1, 0
                 ),
-                (CharacterState.IDLE, CharacterDirection.RIGHT): (
+                (CharacterState.IDLE, Direction.RIGHT): (
                     0, 0
                 ),
-                (CharacterState.WALKING, CharacterDirection.LEFT): (
+                (CharacterState.WALKING, Direction.LEFT): (
                     UNIT_PX*4 + 1, UNIT_PX + 1
                 ),
-                (CharacterState.WALKING, CharacterDirection.RIGHT): (
+                (CharacterState.WALKING, Direction.RIGHT): (
                     0, 25
                 ),
-                (CharacterState.DYING, CharacterDirection.RIGHT): (
+                (CharacterState.DYING, Direction.RIGHT): (
                     UNIT_PX * 4 + 1, UNIT_PX * 2 + 1
                 ),
-                (CharacterState.DYING, CharacterDirection.LEFT): (
+                (CharacterState.DYING, Direction.LEFT): (
                     0, 49
                 ),
             }
@@ -41,22 +42,27 @@ class PlayerAnimationMachine(CharacterAnimationMachine):
 
 
 class Player(Character):
-    def __init__(self, position, clock, enemy_group):
+    def __init__(self, position, clock, enemy_group, weapon):
 
         animation_machine = PlayerAnimationMachine()
 
         super().__init__(
             position, clock,
             animation_machine,
-            collision_size=(44, 64),
+            collision_size=(32, 50),
         )
 
         self.enemy_group = enemy_group
         self.invulnerable = False
 
+        self.weapon = weapon
+
     def update(self):
         self._process_collision()
         self._process_control()
+
+        self.weapon.update()
+        self.weapon.set_position(self.position)
 
         super().update()
 
@@ -75,7 +81,6 @@ class Player(Character):
             self.kill()
     
     def collide_borders(self, width, height):
-
         if self.collision_box.right >= width:
             self.position.x = width - self.collision_box.width / 2
         if self.collision_box.left <= 0:
@@ -96,11 +101,11 @@ class Player(Character):
 
         if left_pressed:
             self.state = CharacterState.WALKING
-            self.direction = CharacterDirection.LEFT
+            self.direction = Direction.LEFT
             self.position.x -= speed
         if right_pressed:
             self.state = CharacterState.WALKING
-            self.direction = CharacterDirection.RIGHT
+            self.direction = Direction.RIGHT
             self.position.x += speed
         if up_pressed:
             self.state = CharacterState.WALKING
@@ -116,3 +121,7 @@ class Player(Character):
             down_pressed
         )):
             self.state = CharacterState.IDLE
+
+    def kill(self):
+        self.weapon.kill()
+        super().kill()

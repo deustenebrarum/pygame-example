@@ -13,7 +13,7 @@ class CharacterState(Enum):
     DYING = 2
 
 
-class CharacterDirection(Enum):
+class Direction(Enum):
     LEFT = 0
     RIGHT = 1
 
@@ -30,57 +30,57 @@ class CharacterAnimationMachine(AnimationMachine):
         self.size = size
         super().__init__(
             {
-                (CharacterState.IDLE, CharacterDirection.LEFT): Animation(
+                (CharacterState.IDLE, Direction.LEFT): Animation(
                     sprite_sheet,
                     columns=4,
                     position=positionsByStates[(
-                        CharacterState.IDLE, CharacterDirection.LEFT)],
+                        CharacterState.IDLE, Direction.LEFT)],
                     size=self.size,
                     frame_shift=self.frame_shift,
                     fps=self.FPS,
                 ),
-                (CharacterState.IDLE, CharacterDirection.RIGHT): Animation(
+                (CharacterState.IDLE, Direction.RIGHT): Animation(
                     sprite_sheet,
                     columns=4,
                     position=positionsByStates[(
-                        CharacterState.IDLE, CharacterDirection.RIGHT)],
+                        CharacterState.IDLE, Direction.RIGHT)],
                     size=self.size,
                     frame_shift=self.frame_shift,
                     fps=self.FPS,
                 ),
-                (CharacterState.WALKING, CharacterDirection.LEFT): Animation(
+                (CharacterState.WALKING, Direction.LEFT): Animation(
                     sprite_sheet,
                     columns=4,
                     position=positionsByStates[(
-                        CharacterState.WALKING, CharacterDirection.LEFT)],
+                        CharacterState.WALKING, Direction.LEFT)],
                     size=self.size,
                     frame_shift=self.frame_shift,
                     fps=self.FPS,
                 ),
-                (CharacterState.WALKING, CharacterDirection.RIGHT): Animation(
+                (CharacterState.WALKING, Direction.RIGHT): Animation(
                     sprite_sheet,
                     columns=4,
                     position=positionsByStates[(
-                        CharacterState.WALKING, CharacterDirection.RIGHT)],
+                        CharacterState.WALKING, Direction.RIGHT)],
                     size=self.size,
                     frame_shift=self.frame_shift,
                     fps=self.FPS,
                 ),
-                (CharacterState.DYING, CharacterDirection.LEFT): Animation(
+                (CharacterState.DYING, Direction.LEFT): Animation(
                     sprite_sheet,
                     columns=4,
                     position=positionsByStates[(
-                        CharacterState.DYING, CharacterDirection.LEFT)],
+                        CharacterState.DYING, Direction.LEFT)],
                     size=self.size,
                     frame_shift=self.frame_shift,
                     fps=self.DYING_FPS,
                     once=True,
                 ),
-                (CharacterState.DYING, CharacterDirection.RIGHT): Animation(
+                (CharacterState.DYING, Direction.RIGHT): Animation(
                     sprite_sheet,
                     columns=4,
                     position=positionsByStates[(
-                        CharacterState.DYING, CharacterDirection.RIGHT)],
+                        CharacterState.DYING, Direction.RIGHT)],
                     size=self.size,
                     frame_shift=self.frame_shift,
                     fps=self.DYING_FPS,
@@ -100,7 +100,7 @@ class Character(pygame.sprite.Sprite):
         animation_machine: AnimationMachine,
         collision_size: tuple[int, int],
         state: CharacterState = CharacterState.IDLE,
-        direction: CharacterDirection = CharacterDirection.LEFT,
+        direction: Direction = Direction.LEFT,
         collision_offset: tuple[int, int] = (
             0, 4 * constants.PIXELS_PER_UNIT
         ),
@@ -127,6 +127,15 @@ class Character(pygame.sprite.Sprite):
         self.rect = self.image.get_rect()
 
         self.clock = clock
+
+    def set_state(self, state):
+        self.state = state
+    
+    def set_position(self, position):
+        if self.state == CharacterState.DYING:
+            return
+
+        self.position = pygame.Vector2(position)
 
     def update(self):
         self.rect.y = int(self.edge_position.y)

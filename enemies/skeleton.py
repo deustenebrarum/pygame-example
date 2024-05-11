@@ -2,7 +2,7 @@ import random
 from enemies.enemy import Enemy
 from enemy_spritesheets import SkeletonSpriteSheet
 from utility.character import (
-    CharacterAnimationMachine, CharacterDirection, CharacterState
+    CharacterAnimationMachine, Direction, CharacterState
 )
 
 
@@ -13,24 +13,24 @@ class SkeletonAnimationMachine(CharacterAnimationMachine):
         unit_px = 24
 
         super().__init__(
-            sprite_sheet, (CharacterState.IDLE, CharacterDirection.LEFT),
+            sprite_sheet, (CharacterState.IDLE, Direction.LEFT),
             {
-                (CharacterState.IDLE, CharacterDirection.RIGHT): (
+                (CharacterState.IDLE, Direction.RIGHT): (
                     0, 0
                 ),
-                (CharacterState.IDLE, CharacterDirection.LEFT): (
+                (CharacterState.IDLE, Direction.LEFT): (
                     unit_px * 4 + 1, 0
                 ),
-                (CharacterState.WALKING, CharacterDirection.RIGHT): (
+                (CharacterState.WALKING, Direction.RIGHT): (
                     0, unit_px * 2 + 1
                 ),
-                (CharacterState.WALKING, CharacterDirection.LEFT): (
+                (CharacterState.WALKING, Direction.LEFT): (
                     unit_px * 4 + 1, unit_px * 2 + 1
                 ),
-                (CharacterState.DYING, CharacterDirection.RIGHT): (
+                (CharacterState.DYING, Direction.RIGHT): (
                     0, unit_px * 6 + 1
                 ),
-                (CharacterState.DYING, CharacterDirection.LEFT): (
+                (CharacterState.DYING, Direction.LEFT): (
                     unit_px * 4 + 1, unit_px * 6 + 1
                 ),
             }
