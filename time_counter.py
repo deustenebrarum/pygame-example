@@ -17,8 +17,9 @@ class TimeCounter:
         self.update_text(self._time_left)
 
     def update(self):
-        if self._time_left > 0:
-            self._time_left -= self.clock.get_time()
+        diff = self.clock.get_time()
+        if self._time_left - diff > 0:
+            self._time_left -= diff
         else:
             self._time_left = 0
         self.update_text(self._time_left)

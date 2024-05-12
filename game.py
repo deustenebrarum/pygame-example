@@ -3,7 +3,7 @@ import pygame
 from player import Player
 from sword import Sword
 from time_counter import TimeCounter
-from utility.character import CharacterState, Direction
+from utility.character import CharacterState
 from utility.constants import GameOverState
 from utility.events_listener import EventsListener
 from utility.random_generators import (
@@ -14,16 +14,14 @@ from utility.random_generators import (
 
 class Game:
     SCREEN_SIZE = (1600, 900)
-    MAX_GAME_TIME = 1 * 60 * 1000
+    BASE_ROOM_TIME = 1 * 10 * 1000
     ENEMY_SPAWN_BASE_INTERVAL = 800
     ENEMY_SPAWN_LIMIT_INTERVAL = 300
-    INTERVAL_DELTA = (
-        (ENEMY_SPAWN_BASE_INTERVAL - ENEMY_SPAWN_LIMIT_INTERVAL) *
-        (MAX_GAME_TIME // 1000)
-    )
 
     def __init__(self, debug=False):
         self.debug = debug
+        self.room_time = Game.BASE_ROOM_TIME
+        self.level = 1
 
         self.ENEMY_SPAWN_EVENT = pygame.event.custom_type()
         self.enemy_spawn_interval = Game.ENEMY_SPAWN_BASE_INTERVAL
@@ -38,7 +36,7 @@ class Game:
 
         pygame.time.set_timer(
             self.ENEMY_SPAWN_EVENT,
-            Game.ENEMY_SPAWN_BASE_INTERVAL
+            self.enemy_spawn_interval
         )
 
         self.enemy_group = pygame.sprite.Group()
@@ -58,8 +56,36 @@ class Game:
 
         self.player_group.add(self.player)
 
-        self.time_counter = TimeCounter(self.clock, self.MAX_GAME_TIME)
+        self.time_counter = TimeCounter(self.clock, self.room_time)
         self.is_running = True
+
+        self.is_level_over = False
+
+    def start_next_level(self):
+        self.level += 1
+        self.room_time = self.BASE_ROOM_TIME
+        interval_diff = 100
+        if self.enemy_spawn_interval - interval_diff > self.ENEMY_SPAWN_LIMIT_INTERVAL:
+            self.enemy_spawn_interval -= interval_diff
+            pygame.time.set_timer(self.ENEMY_SPAWN_EVENT,
+                                  self.enemy_spawn_interval)
+
+        self.time_counter.start()
+        self.is_level_over = False
+        self.player.position = pygame.Vector2(
+            self.player.collision_box.width*3,
+            self.player.position.y
+        )
+
+    def finish_level(self):
+        self.stop_spawning()
+        self.is_level_over = True
+
+    def stop_spawning(self):
+        pygame.time.set_timer(
+            self.ENEMY_SPAWN_EVENT,
+            0
+        )
 
     def _draw_debug(self):
         def draw_collisions(characters):
@@ -99,24 +125,42 @@ class Game:
                     random_screen_border_position(Game.SCREEN_SIZE),
                     self.clock, self.player
                 ))
-                if self.enemy_spawn_interval > self.ENEMY_SPAWN_LIMIT_INTERVAL:
-                    dt = self.clock.get_time() / 1000
-                    self.enemy_spawn_interval -= self.INTERVAL_DELTA * dt
-                else:
-                    self.enemy_spawn_interval = self.ENEMY_SPAWN_LIMIT_INTERVAL
-                pygame.time.set_timer(
-                    self.ENEMY_SPAWN_EVENT, int(self.enemy_spawn_interval))
 
             for listener in self.events_listeners:
                 listener.on_event(event)
 
+    def collide_borders(self):
+        if (
+            not self.is_next_level_allowed() and
+            self.player.collision_box.right >= self.SCREEN_SIZE[0]
+        ):
+            self.player.position.x = (
+                Game.SCREEN_SIZE[0] -
+                self.player.collision_box.width / 2
+            )
+        if self.player.collision_box.left <= 0:
+            self.player.position.x = self.player.collision_box.width / 2
+        if self.player.collision_box.top <= 0:
+            self.player.position.y = (
+                self.player.collision_box.height / 2 -
+                self.player.collision_offset.y
+            )
+        if self.player.collision_box.bottom >= Game.SCREEN_SIZE[1]:
+            self.player.position.y = (
+                Game.SCREEN_SIZE[1] - self.player.collision_box.height / 2 -
+                self.player.collision_offset.y
+            )
+    
+    def is_next_level_allowed(self):
+        return (
+            self.time_counter.is_over and
+            len(self.enemy_group.sprites()) == 0
+        )
+
     def update(self):
         self.player_group.update()
 
-        self.player.collide_borders(
-            self.screen.get_width(),
-            self.screen.get_height()
-        )
+        self.collide_borders()
 
         self.enemy_group.update()
 
@@ -138,7 +182,7 @@ class Game:
         self.process_events(is_game_over=True)
 
         font = pygame.font.SysFont("Arial", 50, bold=True)
-        
+
         game_over_text = "YOU LOSE"
         if game_over_state == GameOverState.WIN:
             game_over_text = "YOU WIN"
@@ -163,6 +207,13 @@ class Game:
         while self.is_running:
             self.process_events()
 
+            if (
+                self.is_next_level_allowed() and
+                self.player.position.x > self.SCREEN_SIZE[0] +
+                    self.player.collision_box.width / 2
+            ):
+                self.start_next_level()
+
             self.update()
 
             self.screen.fill((0, 0, 0))
@@ -173,9 +224,8 @@ class Game:
                 self.is_running = False
                 game_over_state = GameOverState.LOSE
 
-            if self.time_counter.is_over:
-                self.is_running = False
-                game_over_state = GameOverState.WIN
+            if not self.is_level_over and self.time_counter.is_over:
+                self.finish_level()
 
             pygame.display.flip()
 
@@ -185,7 +235,7 @@ class Game:
             pygame.quit()
             return
 
-        pygame.event.clear(self.ENEMY_SPAWN_EVENT)
+        self.stop_spawning()
         self.is_running = True
 
         while self.is_running:

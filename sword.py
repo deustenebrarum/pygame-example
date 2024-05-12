@@ -30,8 +30,8 @@ class Sword(pygame.sprite.Sprite):
 
     def update(self):
         angle = (pygame.time.get_ticks() / 20) % 360
-        self.rect.x = self._position[0] + int(math.cos(math.radians(angle)) * 100)
-        self.rect.y = self._position[1] + int(math.sin(math.radians(angle)) * 100)
+        self.rect.x = int(self._position[0] + math.cos(math.radians(angle)) * 100)
+        self.rect.y = int(self._position[1] + math.sin(math.radians(angle)) * 100)
 
         self.collision_box.x = self.rect.x
         self.collision_box.y = self.rect.y

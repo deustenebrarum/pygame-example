@@ -79,16 +79,6 @@ class Player(Character):
         any_enemy_alive = any([enemy.is_alive for enemy in collided_enemies])
         if any_enemy_alive:
             self.kill()
-    
-    def collide_borders(self, width, height):
-        if self.collision_box.right >= width:
-            self.position.x = width - self.collision_box.width / 2
-        if self.collision_box.left <= 0:
-            self.position.x = self.collision_box.width / 2
-        if self.collision_box.top <= 0:
-            self.position.y = self.collision_box.height / 2 - self.collision_offset.y
-        if self.collision_box.bottom >= height:
-            self.position.y = height - self.collision_box.height / 2 - self.collision_offset.y
 
     def _process_control(self):
         dt = self.clock.get_time() / 1000
